@@ -17,8 +17,9 @@ import {
 
 const $sectionPokemon = document.querySelector("#section__pokemon");
 const $modalPokemon = document.querySelector("#pokemon__modal");
+const randomPokemon = Math.floor(Math.random() * 898);
 let $cardsGrid;
-let $returnToElement = $sectionPokemon;
+let $scrollToElement = $sectionPokemon;
 
 export async function displayPokemon(amount) {
     createGrid($sectionPokemon);
@@ -193,27 +194,25 @@ const createType = ($element, type) => {
 };
 
 const createCardCover = ($element, pokemon) => {
-    const $returnToElement = returnElement({
+    const $cardsCover = returnElement({
         type: "div",
         class: "pokemon-card__card-cover",
         id: pokemon.id,
     });
 
-    appendElement($element, [$returnToElement]);
+    appendElement($element, [$cardsCover]);
 };
 
 const handleCardClick = (e) => {
     const card = e.target;
 
-    if (card.id !== "") {
-        $returnToElement = card;
+    if (card.id) {
+        $scrollToElement = card;
         displayElement($modalPokemon);
         displayPokemonData(card.id);
         hideElement($sectionPokemon);
     }
 };
-
-const randomPokemon = Math.floor(Math.random() * 898);
 
 const displayPokemonData = async (id = randomPokemon) => {
     const modalInfo = await getModalInfo(id);
@@ -225,10 +224,11 @@ const displayPokemonData = async (id = randomPokemon) => {
 };
 
 const changeModalBackground = (modalInfo) => {
-    const firstTypeColor =
-        typePokemonColors[modalInfo.biography.Pokedex.types[0]].backgroundColor;
+    const firstTypePokemon = modalInfo.biography.Pokedex.types[0];
+    const pokemonTypeColor =
+        typePokemonColors[firstTypePokemon].backgroundColor;
 
-    $modalPokemon.style.backgroundColor = firstTypeColor;
+    $modalPokemon.style.backgroundColor = pokemonTypeColor;
 };
 
 const createGoBackButton = ($element) => {
@@ -250,7 +250,7 @@ const handleGoBackClick = () => {
     resetBackgroundColor($modalPokemon);
     hideElement($modalPokemon);
     displayElement($sectionPokemon);
-    $returnToElement.scrollIntoView();
+    $scrollToElement.scrollIntoView();
 };
 
 const createPokemonContainerModal = ($element, modalInfo, id) => {
@@ -307,172 +307,199 @@ const createPokemonImageModal = ($element, id) => {
     appendElement($element, [$pokemonImage]);
 };
 
-/* Refactor later */
 const createDataContainerModal = ($element, modalInfo) => {
     const $dataContainer = returnElement({
         type: "div",
         class: "pokemon__modal__data-container",
     });
 
+    createButtonList($dataContainer, modalInfo);
+    createBiographyContainer($dataContainer, modalInfo);
+    createStatsContainer($dataContainer, modalInfo);
+    createFormsContainer($dataContainer, modalInfo);
+
+    appendElement($element, [$dataContainer]);
+};
+
+const createButtonList = ($element, modalInfo) => {
     const $buttonList = returnElement({
         type: "ul",
         class: "pokemon__modal__data-container__list",
     });
 
+    createButtonListItems($buttonList, modalInfo);
+
+    appendElement($element, [$buttonList]);
+};
+
+const createButtonListItems = ($element, modalInfo) => {
     for (const [key] of Object.entries(modalInfo)) {
         const $listItem = returnElement({
             type: "li",
             class: "pokemon__modal__data-container__list__list-item",
         });
 
-        const $listButton = returnElement({
-            type: "button",
-            class:
-                key === "biography"
-                    ? "pokemon__modal__data-container__list__list-item__button--selected"
-                    : "pokemon__modal__data-container__list__list-item__button",
-            innerText: key,
-        });
+        createListButton($listItem, key);
 
-        $listButton.onclick = (e) => {
-            handleSectionClick(e.target);
-        };
+        appendElement($element, [$listItem]);
+    }
+};
 
-        appendElement($listItem, [$listButton]);
-        appendElement($buttonList, [$listItem]);
+const createListButton = ($element, key) => {
+    const $listButton = returnElement({
+        type: "button",
+        class: "pokemon__modal__data-container__list__list-item__button",
+        innerText: key,
+    });
+
+    if (key === "biography") {
+        $listButton.className =
+            "pokemon__modal__data-container__list__list-item__button--selected";
     }
 
+    $listButton.onclick = (e) => {
+        handleSectionClick(e.target);
+    };
+
+    appendElement($element, [$listButton]);
+};
+
+const createBiographyContainer = ($element, modalInfo) => {
     const $biographyContainer = returnElement({
         type: "section",
         class: "pokemon__modal__data-container__biography-container",
         id: "biography",
     });
 
+    createBiography($biographyContainer, modalInfo);
+
+    appendElement($element, [$biographyContainer]);
+};
+
+const createBiography = ($element, modalInfo) => {
+    createTitle($element, "Pokedex");
+    createPokedexList($element, modalInfo);
+    createTitle($element, "Details");
+    createDetailsList($element, modalInfo);
+};
+
+const createTitle = ($element, titleInnerText) => {
+    const $pokedexTitle = returnElement({
+        type: "h3",
+        class: "pokemon__modal__data-container__biography-container__list",
+        innerText: titleInnerText,
+    });
+
+    appendElement($element, [$pokedexTitle]);
+};
+
+const createPokedexList = ($element, modalInfo) => {
+    const $pokedexList = returnElement({
+        type: "ul",
+        class: "pokemon__modal__data-container__biography-container__list",
+    });
+
+    createEntrieContainer(
+        $pokedexList,
+        modalInfo.biography.Pokedex,
+        "biography"
+    );
+
+    appendElement($element, [$pokedexList]);
+};
+
+const createEntrieContainer = ($element, modalInfo, section) => {
+    for (const [key, entrie] of Object.entries(modalInfo)) {
+        if (key !== "japaneseName") {
+            const $entrieContainer = returnElement({
+                type: "li",
+                class: `pokemon__modal__data-container__${section}-container__list__item`,
+            });
+
+            createEntrieTitle($entrieContainer, key, section);
+            createEntrieData($entrieContainer, key, entrie, section);
+
+            appendElement($element, [$entrieContainer]);
+        }
+    }
+};
+
+const createEntrieTitle = ($element, key, section) => {
+    const $keyData = returnElement({
+        type: "h4",
+        class: `pokemon__modal__data-container__${section}-container__list__item__title medium-opacity`,
+        innerText: key,
+    });
+
+    appendElement($element, [$keyData]);
+};
+
+const createEntrieData = ($element, key, entrie, section) => {
+    if (section !== "stats") {
+        const $entrieData = returnElement({
+            type: "p",
+            class: `pokemon__modal__data-container__${section}-container__list__item__entrie`,
+            innerText: entrie.toString().replace(",", "\n"),
+        });
+
+        if (key === "id") {
+            $entrieData.innerText = getDisplayedId(entrie);
+        } else if (key === "description") {
+            $entrieData.className = `pokemon__modal__data-container__${section}-container__list__item__description`;
+            $entrieData.innerText = entrie;
+        }
+
+        appendElement($element, [$entrieData]);
+    }
+
+    if (section === "stats") {
+        for (const slot of entrie) {
+            const $entrieData = returnElement({
+                type: "p",
+                class: `pokemon__modal__data-container__${section}-container__list__item__entrie`,
+                innerText: slot,
+            });
+
+            if (slot === "Min" || slot === "Max") {
+                $entrieData.className = `pokemon__modal__data-container__${section}-container__list__item__min-max medium-opacity`;
+            }
+
+            appendElement($element, [$entrieData]);
+        }
+    }
+};
+
+const createDetailsList = ($element, modalInfo) => {
+    const $detailsList = returnElement({
+        type: "ul",
+        class: "pokemon__modal__data-container__biography-container__list",
+    });
+
+    createEntrieContainer(
+        $detailsList,
+        modalInfo.biography.Details,
+        "biography"
+    );
+
+    appendElement($element, [$detailsList]);
+};
+
+const createStatsContainer = ($element, modalInfo) => {
     const $statsContainer = returnElement({
         type: "section",
         class: "pokemon__modal__data-container__stats-container hidden",
         id: "stats",
     });
 
-    const $formsContainer = returnElement({
-        type: "section",
-        class: "pokemon__modal__data-container__forms-container hidden",
-        id: "forms",
-    });
+    createStats($statsContainer, modalInfo);
 
-    const $pokedexTitle = returnElement({
-        type: "h3",
-        class: "pokemon__modal__data-container__biography-container__list",
-        innerText: "Pokedex",
-    });
-
-    const $pokedexList = returnElement({
-        type: "ul",
-        class: "pokemon__modal__data-container__biography-container__list",
-    });
-
-    for (const [key, entrie] of Object.entries(modalInfo.biography.Pokedex)) {
-        if (key !== "japaneseName") {
-            const $entrieContainer = returnElement({
-                type: "li",
-                class: "pokemon__modal__data-container__biography-container__list__item",
-            });
-
-            const $keyData = returnElement({
-                type: "h4",
-                class: "pokemon__modal__data-container__biography-container__list__item__title medium-opacity",
-                innerText: key,
-            });
-
-            const $entrieData = returnElement({
-                type: "p",
-                class: "pokemon__modal__data-container__biography-container__list__item__entrie",
-                innerText: entrie.toString().replace(",", "\n"),
-            });
-
-            if (key === "id") {
-                $entrieData.innerText = getDisplayedId(entrie);
-            } else if (key === "description") {
-                $entrieData.className =
-                    "pokemon__modal__data-container__biography-container__list__item__description";
-                $entrieData.innerText = entrie;
-            }
-
-            appendElement($entrieContainer, [$keyData, $entrieData]);
-            appendElement($pokedexList, [$entrieContainer]);
-        }
-    }
-
-    const $detailsTitle = returnElement({
-        type: "h3",
-        class: "pokemon__modal__data-container__biography-container__list",
-        innerText: "Details",
-    });
-
-    const $detailsList = returnElement({
-        type: "ul",
-        class: "pokemon__modal__data-container__biography-container__list",
-    });
-
-    for (const [key, entrie] of Object.entries(modalInfo.biography.Details)) {
-        if (key !== "japaneseName") {
-            const $entrieContainer = returnElement({
-                type: "li",
-                class: "pokemon__modal__data-container__biography-container__list__item",
-            });
-
-            const $keyData = returnElement({
-                type: "h4",
-                class: "pokemon__modal__data-container__biography-container__list__item__title medium-opacity",
-                innerText: key,
-            });
-
-            const $entrieData = returnElement({
-                type: "p",
-                class:
-                    key === "description"
-                        ? "pokemon__modal__data-container__biography-container__list__item__description"
-                        : "pokemon__modal__data-container__biography-container__list__item__entrie",
-                innerText:
-                    key !== "id"
-                        ? entrie.toString().replace(",", "\n")
-                        : getDisplayedId(entrie),
-            });
-
-            appendElement($entrieContainer, [$keyData, $entrieData]);
-            appendElement($detailsList, [$entrieContainer]);
-        }
-    }
-
-    appendElement($biographyContainer, [
-        $pokedexTitle,
-        $pokedexList,
-        $detailsTitle,
-        $detailsList,
-    ]);
-
-    createStatsTitle($statsContainer);
-    createStatsList($statsContainer, modalInfo);
-    createStatsDescription($statsContainer);
-
-    appendElement($dataContainer, [
-        $buttonList,
-        $biographyContainer,
-        $statsContainer,
-        $formsContainer,
-    ]);
-
-    appendElement($element, [$dataContainer]);
+    appendElement($element, [$statsContainer]);
 };
 
-const createStatsTitle = ($element) => {
-    const $statsTitle = returnElement({
-        type: "h3",
-        class: "pokemon__modal__data-container__biography-container__list",
-        innerText: "Stats",
-    });
-
-    appendElement($element, [$statsTitle]);
+const createStats = ($element, modalInfo) => {
+    createTitle($element, "Stats");
+    createStatsList($element, modalInfo);
+    createStatsDescription($element);
 };
 
 const createStatsList = ($element, modalInfo) => {
@@ -481,50 +508,9 @@ const createStatsList = ($element, modalInfo) => {
         class: "pokemon__modal__data-container__biography-container__list",
     });
 
-    createEntrieContainer($statsList, modalInfo);
+    createEntrieContainer($statsList, modalInfo.stats.Stats, "stats");
 
     appendElement($element, [$statsList]);
-};
-
-const createEntrieContainer = ($element, modalInfo) => {
-    for (const [key, entrie] of Object.entries(modalInfo.stats.Stats)) {
-        const $entrieContainer = returnElement({
-            type: "li",
-            class: "pokemon__modal__data-container__stats-container__list__item",
-        });
-
-        createKey($entrieContainer, key);
-        createEntrie($entrieContainer, entrie);
-
-        appendElement($element, [$entrieContainer]);
-    }
-};
-
-const createKey = ($element, key) => {
-    const $keyData = returnElement({
-        type: "h4",
-        class: "pokemon__modal__data-container__stats-container__list__item__title medium-opacity",
-        innerText: key,
-    });
-
-    appendElement($element, [$keyData]);
-};
-
-const createEntrie = ($element, entrie) => {
-    for (const slot of entrie) {
-        const $entrieData = returnElement({
-            type: "p",
-            class: "pokemon__modal__data-container__stats-container__list__item__entrie",
-            innerText: slot,
-        });
-
-        if (slot === "Min" || slot === "Max") {
-            $entrieData.className =
-                "pokemon__modal__data-container__stats-container__list__item__min-max medium-opacity";
-        }
-
-        appendElement($element, [$entrieData]);
-    }
 };
 
 const createStatsDescription = ($element) => {
@@ -540,6 +526,16 @@ const createStatsDescription = ($element) => {
     appendElement($element, [$statsDescription]);
 };
 
+const createFormsContainer = ($element, modalInfo) => {
+    const $formsContainer = returnElement({
+        type: "section",
+        class: "pokemon__modal__data-container__forms-container hidden",
+        id: "forms",
+    });
+
+    appendElement($element, [$formsContainer]);
+};
+
 const handleSectionClick = ($clickedButton) => {
     const selectedText = new RegExp("--selected");
     const $selectedButton = document.querySelector(
@@ -547,18 +543,24 @@ const handleSectionClick = ($clickedButton) => {
     );
 
     if (!selectedText.test($clickedButton.className)) {
-        const selectedInfoId = $clickedButton.innerText.toLowerCase();
-        const unselectedInfoId = $selectedButton.innerText.toLowerCase();
-
-        const $selectedInfo = document.querySelector(`#${selectedInfoId}`);
-        const $unselectedInfo = document.querySelector(`#${unselectedInfoId}`);
-
-        displayElement($selectedInfo);
-        hideElement($unselectedInfo);
+        hideSection($selectedButton);
+        displaySection($clickedButton);
 
         selectButton($clickedButton);
         unselectButton($selectedButton);
     }
+};
+
+const hideSection = ($selectedButton) => {
+    const unselectedInfoId = $selectedButton.innerText.toLowerCase();
+    const $unselectedInfo = document.querySelector(`#${unselectedInfoId}`);
+    hideElement($unselectedInfo);
+};
+
+const displaySection = ($clickedButton) => {
+    const selectedInfoId = $clickedButton.innerText.toLowerCase();
+    const $selectedInfo = document.querySelector(`#${selectedInfoId}`);
+    displayElement($selectedInfo);
 };
 
 displayElement($modalPokemon);
