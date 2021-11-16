@@ -563,6 +563,6 @@ const displaySection = ($clickedButton) => {
     displayElement($selectedInfo);
 };
 
-displayElement($modalPokemon);
+/* displayElement($modalPokemon);
 displayPokemonData();
-hideElement($sectionPokemon);
+hideElement($sectionPokemon); */
