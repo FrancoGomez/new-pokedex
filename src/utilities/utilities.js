@@ -73,13 +73,13 @@ export const typePokemonColors = {
     },
 };
 
-export function appendElement($father, arrayChilds) {
+export const appendElement = ($father, arrayChilds) => {
     for (const $child of arrayChilds) {
         $father.appendChild($child);
     }
 }
 
-export function returnElement(propiedades) {
+export const returnElement = (propiedades) => {
     const $element = document.createElement(propiedades.type);
     $element.className = propiedades.class;
 
@@ -106,7 +106,7 @@ export function returnElement(propiedades) {
     return $element;
 }
 
-export function getPokemonImage(pokemonId) {
+export const getPokemonImage = (pokemonId) => {
     const imageUrl = `${
         pokemonId === 718
             ? "https://projectpokemon.org/images/sprites-models/homeimg/poke_capture_0718_000_uk_n_00000000_f_n.png"
@@ -116,13 +116,13 @@ export function getPokemonImage(pokemonId) {
     return imageUrl;
 }
 
-export function getDisplayedId(pokemonId) {
+export const getDisplayedId = (pokemonId) => {
     const displayedId = `#${pokemonId.toString().padStart(3, "0")}`;
 
     return displayedId;
 }
 
-export async function getPokemon(id) {
+export  const getPokemon = async (id) => {
     const POKEMON_URL = `https://pokeapi.co/api/v2/pokemon/${id}`;
     const pokemonObject = await (await fetch(POKEMON_URL)).json();
     const types = [];
@@ -142,7 +142,7 @@ export async function getPokemon(id) {
     return pokemon;
 }
 
-export async function getPokemonSpecies(id) {
+export  const getPokemonSpecies = async (id) => {
     const POKEMON_SPECIES_URL = `https://pokeapi.co/api/v2/pokemon-species/${id}`;
     const pokemonSpeciesObject = await (
         await fetch(POKEMON_SPECIES_URL)
@@ -189,7 +189,7 @@ const returnDamageRelationObject = async () => {
     }
 };
 
-export async function getModalInfo(id) {
+export const getModalInfo = async (id) => {
     const POKEMON_URL = `https://pokeapi.co/api/v2/pokemon/${id}`;
     const POKEMON_SPECIES_URL = `https://pokeapi.co/api/v2/pokemon-species/${id}`;
 
@@ -206,8 +206,6 @@ export async function getModalInfo(id) {
         forms: specieForms,
     };
 }
-
-getModalInfo(1);
 
 const returnDescription = (entries) => {
     for (const slot of entries) {
@@ -363,29 +361,30 @@ const returnSpecieForms = (pokemonSpecies) => {
     return specieForms;
 };
 
-export function hideElement($element) {
+export const hideElement = ($element) => {
     $element.className += " hidden";
-}
+};
 
-export function displayElement($element) {
+export const displayElement = ($element) => {
     $element.className = $element.className.replace(" hidden", "");
-}
+};
 
-export function resetBackgroundColor($element) {
+export const resetBackgroundColor = ($element) => {
     $element.style.backgroundColor = "";
-}
-export function removeElementChilds($element) {
+};
+
+export const removeElementChilds = ($element) => {
     const childLength = $element.childNodes.length - 1;
 
     for (let i = childLength; i >= 0; i--) {
         $element.childNodes[i].remove();
     }
-}
+};
 
-export function selectButton($button) {
+export const selectButton = ($button) => {
     $button.className += "--selected";
-}
+};
 
-export function unselectButton($button) {
+export const unselectButton = ($button) => {
     $button.className = $button.className.replace("--selected", "");
-}
+};
