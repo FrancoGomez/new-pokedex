@@ -184,10 +184,10 @@ button {
 }
 
 .pokemon__modal__pokemon-container__japanese-name {
-    font-size: 3.5rem;
+    font-size: clamp(3.5rem, 12vw + 1rem, 7rem);
     text-align: center;
-    margin-bottom: -25%;
     font-weight: 600;
+    margin-bottom: max(-15%, -100px);
 }
 
 .pokemon__modal__pokemon-container__image-container {
@@ -195,13 +195,14 @@ button {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    max-width: 70%;
+    max-width: min(512px, 70%);
+    min-width: 230px;
     aspect-ratio: 1;
     margin: auto;
 }
 
 .pokemon__modal__pokemon-container__image-container__background-circle {
-    min-width: 55%;
+    min-width: 65%;
     aspect-ratio: 1;
     border-radius: 50%;
     margin-bottom: 30px;
