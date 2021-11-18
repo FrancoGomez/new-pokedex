@@ -20,7 +20,8 @@ const $modalPokemon = document.querySelector("#pokemon__modal");
 const randomPokemon = Math.floor(Math.random() * 898);
 let $scrollToElement = $sectionPokemon;
 
-export const displayPokemonData = async (id = randomPokemon) => {
+export const displayPokemonData = async (id = randomPokemon, $scrollTo) => {
+    $scrollToElement = $scrollTo;
     const modalInfo = await getModalInfo(id);
 
     changeModalBackground(modalInfo);
@@ -437,12 +438,14 @@ const createImageForm = ($element, slot) => {
         id: slot.id,
     });
 
+    /* Se resetea $scrollToElement al volver a mostrar el modal*/
     $imageForm.onclick = (e) => {
+        const $scrollTo = $scrollToElement;
         const image = e.target;
-        handleGoBackClick();
-        displayElement($modalPokemon);
+        removeElementChilds($modalPokemon);
+        resetBackgroundColor($modalPokemon);
         displayPokemonData(image.id);
-        hideElement($sectionPokemon);
+        $scrollToElement = $scrollTo;
     };
 
     appendElement($element, [$imageForm]);

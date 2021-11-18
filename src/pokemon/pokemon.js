@@ -205,11 +205,10 @@ const createCardCover = ($element, pokemon) => {
 
 const handleCardClick = (e) => {
     const card = e.target;
-
     if (card.id) {
         $scrollToElement = card;
         displayElement($modalPokemon);
-        displayPokemonData(card.id);
+        displayPokemonData(card.id, $scrollToElement);
         hideElement($sectionPokemon);
     }
 };
