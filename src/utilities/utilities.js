@@ -77,7 +77,7 @@ export const appendElement = ($father, arrayChilds) => {
     for (const $child of arrayChilds) {
         $father.appendChild($child);
     }
-}
+};
 
 export const returnElement = (propiedades) => {
     const $element = document.createElement(propiedades.type);
@@ -104,7 +104,7 @@ export const returnElement = (propiedades) => {
     }
 
     return $element;
-}
+};
 
 export const getPokemonImage = (pokemonId) => {
     const imageUrl = `${
@@ -114,20 +114,26 @@ export const getPokemonImage = (pokemonId) => {
     }`;
 
     return imageUrl;
-}
+};
 
 export const getDisplayedId = (pokemonId) => {
     const displayedId = `#${pokemonId.toString().padStart(3, "0")}`;
 
     return displayedId;
-}
+};
 
-export  const getPokemon = async (id) => {
+export const getPokemon = async (id, url = false) => {
     const POKEMON_URL = `https://pokeapi.co/api/v2/pokemon/${id}`;
-    const pokemonObject = await (await fetch(POKEMON_URL)).json();
+    let pokemonObject;
+    if (url) {
+        pokemonObject = await (await fetch(url)).json();
+    } else {
+        pokemonObject = await (await fetch(POKEMON_URL)).json();
+    }
     const types = [];
 
     const pokemon = {
+        "image url": getPokemonImage(pokemonObject.id),
         name: pokemonObject.name,
         id: pokemonObject.id,
     };
@@ -140,53 +146,19 @@ export  const getPokemon = async (id) => {
     pokemon.types = types;
 
     return pokemon;
-}
+};
 
-export  const getPokemonSpecies = async (id) => {
+export const getPokemonSpecies = async (id) => {
     const POKEMON_SPECIES_URL = `https://pokeapi.co/api/v2/pokemon-species/${id}`;
-    const pokemonSpeciesObject = await (
-        await fetch(POKEMON_SPECIES_URL)
-    ).json();
+    const pokemonSpeciesData = await (await fetch(POKEMON_SPECIES_URL)).json();
 
     const pokemonSpecies = {
-        name: pokemonSpeciesObject.name,
-        id: pokemonSpeciesObject.id,
-        japaneseName: returnJapaneseName(pokemonSpeciesObject),
+        name: pokemonSpeciesData.name,
+        id: pokemonSpeciesData.id,
+        japaneseName: getJapaneseName(pokemonSpeciesData),
     };
 
     return pokemonSpecies;
-}
-
-const returnJapaneseName = (pokemonSpeciesObject) => {
-    for (const slot of pokemonSpeciesObject.names) {
-        const language = slot.language.name;
-        const name = slot.name;
-
-        if (language === "ja") {
-            return name;
-        }
-    }
-};
-
-const returnDamageRelationObject = async () => {
-    const POKEMON_TYPES_URL = "https://pokeapi.co/api/v2/type/";
-    const pokemonTypesObject = await (await fetch(POKEMON_TYPES_URL)).json();
-
-    for (const slot of pokemonTypes.results) {
-        const POKEMON_DAMAGE_RELATION_URL = `https://pokeapi.co/api/v2/type/${slot.name}`;
-        const pokemonDamageRelationObject = await (
-            await fetch(POKEMON_TYPES_URL)
-        ).json();
-
-        pokemonDamageRelation = {
-            "double damage from": "",
-            "double damage to": "",
-            "half damage from": "",
-            "half damage to": "",
-            "no damage from": "",
-            "no damage to": "",
-        };
-    }
 };
 
 export const getModalInfo = async (id) => {
@@ -196,169 +168,393 @@ export const getModalInfo = async (id) => {
     const pokemon = await (await fetch(POKEMON_URL)).json();
     const pokemonSpecies = await (await fetch(POKEMON_SPECIES_URL)).json();
 
+    const EVOLUTION_CHAIN_URL = pokemonSpecies.evolution_chain.url;
+
+    const evolutionChain = await (await fetch(EVOLUTION_CHAIN_URL)).json();
+
     const pokemonInfo = returnPokemonInfo(pokemon, pokemonSpecies);
     const fightStats = returnFightStats(pokemon);
-    const specieForms = returnSpecieForms(pokemonSpecies);
+    const evolutionsInfo = await returnEvolutions(evolutionChain);
 
     return {
-        biography: pokemonInfo,
+        about: pokemonInfo,
         stats: fightStats,
-        forms: specieForms,
+        evolutions: evolutionsInfo,
     };
-}
-
-const returnDescription = (entries) => {
-    for (const slot of entries) {
-        const language = slot.language.name;
-        const description = slot.flavor_text;
-
-        if (language === "en") {
-            return description
-                .replaceAll("\n", " ")
-                .replace("POKéMON", "Pokemon")
-                .replaceAll(".", ". ");
-        }
-    }
 };
 
-const returnTypes = (types) => {
-    const auxiliar = [];
-
-    for (const slot of types) {
-        auxiliar.push(slot.type.name);
-    }
-
-    return auxiliar;
+const returnJSON = async (url) => {
+    const pokemon = await (await fetch(url)).json();
+    return pokemon;
 };
 
-const returnAbilities = (route, returnHidden) => {
-    const abilities = [];
+const returnEvolutions = async (evolutionChain) => {
+    const evolutions = {
+        first: await getFirstEvolution(evolutionChain),
+        second: await getSecondEvolution(evolutionChain.chain),
+        third: await getThirdEvolution(evolutionChain.chain),
+    };
 
-    for (const slot of route) {
-        const abilityName = slot.ability.name.replaceAll("-", " ");
-
-        if (!slot.is_hidden) {
-            abilities.push(abilityName);
-        } else if (returnHidden && slot.is_hidden) {
-            return abilityName;
-        }
-    }
-
-    return abilities;
+    return evolutions;
 };
 
-const returnEggTypes = (route) => {
-    const eggTypes = [];
+const getFirstEvolution = async (evolutionChain) => {
+    const POKEMON_SPECIES_URL = evolutionChain.chain.species.url;
+    const pokemon = await returnJSON(
+        POKEMON_SPECIES_URL.replace("-species", "")
+    );
+    const pokemonSpecies = await returnJSON(POKEMON_SPECIES_URL);
 
-    for (const slot of route) {
-        eggTypes.push(slot.name);
-    }
-
-    return eggTypes.length === 0 ? "unknow" : eggTypes;
-};
-
-const returnPokemonInfo = (pokemon, pokemonSpecies) => {
-    const pokemonInfo = {
-        Pokedex: {
-            description: returnDescription(pokemonSpecies.flavor_text_entries),
+    const pokemonEvolution = [
+        {
+            "image url": getPokemonImage(pokemon.id),
             name: pokemon.name,
             id: pokemon.id,
-            japaneseName: returnJapaneseName(pokemonSpecies),
-            specie: pokemonSpecies.genera[7].genus,
-            types: returnTypes(pokemon.types),
-            abilities: returnAbilities(pokemon.abilities),
-            "hidden ability":
-                returnAbilities(pokemon.abilities, true).length === 0
-                    ? "none"
-                    : returnAbilities(pokemon.abilities, true),
-            height: `${pokemon.height / 10}m`,
-            weight: `${pokemon.weight / 10}kg`,
-            gender: pokemonSpecies.gender_rate !== -1 ? "♂ ♀" : "genderless",
-            "egg group": returnEggTypes(pokemonSpecies.egg_groups),
+            types: getTypes(pokemon),
         },
-        Details: {
-            "catch rate": `${(
-                (pokemonSpecies.capture_rate / 255) *
-                100
-            ).toFixed(1)}%`,
-            "base happines": pokemonSpecies.base_happiness,
-            "base experience": pokemon.base_experience,
-            grow: pokemonSpecies.growth_rate.name.replaceAll("-", " "),
-            color: pokemonSpecies.color.name,
-            generation: pokemonSpecies.generation.url
-                .replace("https://pokeapi.co/api/v2/generation/", "")
-                .replace("/", ""),
-            habitat:
-                pokemonSpecies.habitat === null
-                    ? "unknow"
-                    : pokemonSpecies.habitat.name,
-            shape: pokemonSpecies.shape.name,
+    ];
+
+    for (const slot of pokemonSpecies.varieties) {
+        if (slot.is_default) continue;
+
+        if (pokemonEvolution.varieties) {
+            pokemonEvolution.varieties.push(
+                await getPokemon(false, slot.pokemon.url)
+            );
+        } else {
+            pokemonEvolution.varieties = [
+                await getPokemon(false, slot.pokemon.url),
+            ];
+        }
+    }
+
+    return pokemonEvolution;
+};
+
+const getSecondEvolution = async (evolutionChain) => {
+    if (evolutionChain.evolves_to.length === 0) return;
+
+    const pokemonEvolution = [];
+
+    for (const slot of evolutionChain.evolves_to) {
+        const POKEMON_SPECIES_URL = slot.species.url;
+        const pokemon = await returnJSON(
+            POKEMON_SPECIES_URL.replace("-species", "")
+        );
+        const pokemonSpecies = await returnJSON(POKEMON_SPECIES_URL);
+
+        const evolution = {
+            "image url": getPokemonImage(pokemon.id),
+            name: pokemon.name,
+            id: pokemon.id,
+            types: getTypes(pokemon),
+        };
+
+        for (const slot of pokemonSpecies.varieties) {
+            if (slot.is_default) continue;
+
+            if (evolution.varieties) {
+                evolution.varieties.push(
+                    await getPokemon(false, slot.pokemon.url)
+                );
+            } else {
+                evolution.varieties = [
+                    await getPokemon(false, slot.pokemon.url),
+                ];
+            }
+        }
+
+        pokemonEvolution.push(evolution);
+    }
+
+    return pokemonEvolution;
+};
+
+const getThirdEvolution = async (evolutionChain) => {
+    if (evolutionChain.evolves_to.length === 0) return;
+    const pokemonEvolution = [];
+
+    for (const slot of evolutionChain.evolves_to) {
+        const evolutions = await getSecondEvolution(slot);
+        if (evolutions === undefined) return;
+        pokemonEvolution.push(evolutions[0]);
+    }
+
+    return pokemonEvolution;
+};
+
+const returnPokemonInfo = (pokemon, pokemonSpecie) => {
+    const pokemonInfo = {
+        about: {
+            name: getName(pokemon),
+            japaneseName: getJapaneseName(pokemonSpecie),
+            id: getId(pokemon),
+            types: getTypes(pokemon),
+            description: getDescription(pokemonSpecie),
+        },
+        pokedex: {
+            specie: getSpecie(pokemonSpecie),
+            id: getId(pokemon),
+            height: getHeight(pokemon),
+            weight: getWeight(pokemon),
+            types: getTypes(pokemon),
+            abilities: getAbilities(pokemon),
+            generation: getGeneration(pokemonSpecie),
+            habitat: getHabitat(pokemonSpecie),
+        },
+        training: {
+            "catch rate": getCatchRate(pokemonSpecie),
+            "base friendship": getBaseFriendship(pokemonSpecie),
+            "base exp": getBaseExp(pokemon),
+            "growth rate": getGrowthRate(pokemonSpecie),
+        },
+        breeding: {
+            gender: getGender(pokemonSpecie),
+            "egg groups": getEggGroups(pokemonSpecie),
+            "egg cycles": getEggCycles(pokemonSpecie),
         },
     };
 
     return pokemonInfo;
 };
 
+const getName = (pokemon) => {
+    return pokemon.name;
+};
+
+const getJapaneseName = (pokemonSpecie) => {
+    for (const slot of pokemonSpecie.names) {
+        const language = slot.language.name;
+        const japanese = "ja";
+
+        if (language === japanese) {
+            return slot.name;
+        }
+    }
+};
+
+const getTypes = (pokemon) => {
+    const types = [];
+
+    for (const slot of pokemon.types) {
+        types.push(slot.type.name);
+    }
+
+    return types;
+};
+
+const getDescription = (pokemonSpecie) => {
+    const descriptions = pokemonSpecie.flavor_text_entries;
+
+    for (const slot of descriptions) {
+        const english = "en";
+        const description = slot.flavor_text.replaceAll("\n", " ");
+
+        if (slot.language.name === english) {
+            return description;
+        }
+    }
+};
+
+const getSpecie = (pokemonSpecie) => {
+    const species = pokemonSpecie.genera;
+    for (const slot of species) {
+        const language = slot.language.name;
+        const english = "en";
+        const specie = slot.genus;
+
+        if (language === english) {
+            return specie.replace("Pokémon", "");
+        }
+    }
+};
+
+const getId = (pokemon) => {
+    return pokemon.id;
+};
+
+const getHeight = (pokemon) => {
+    return `${pokemon.height / 10}m`;
+};
+
+const getWeight = (pokemon) => {
+    return `${pokemon.weight / 10}kg`;
+};
+
+const getAbilities = (pokemon) => {
+    const abilities = [];
+
+    for (const slot of pokemon.abilities) {
+        const abilityName = slot.ability.name.replaceAll("-", " ");
+
+        if (slot.is_hidden) {
+            abilities.push(`${abilityName} (hidden)`);
+        } else {
+            abilities.push(abilityName);
+        }
+    }
+
+    return abilities;
+};
+
+const getGeneration = (pokemonSpecie) => {
+    const generationNumber = pokemonSpecie.generation.url.slice(-2, -1);
+
+    return `generation ${generationNumber}`;
+};
+
+const getHabitat = (pokemonSpecie) => {
+    return pokemonSpecie.habitat === null
+        ? "unknow"
+        : pokemonSpecie.habitat.name.replaceAll("-", " ");
+};
+
+const getCatchRate = (pokemonSpecie) => {
+    return `${((pokemonSpecie.capture_rate / 255) * 100).toFixed(1)}%`;
+};
+
+const getBaseFriendship = (pokemonSpecie) => {
+    return pokemonSpecie.base_happiness;
+};
+
+const getBaseExp = (pokemon) => {
+    return pokemon.base_experience;
+};
+
+const getGrowthRate = (pokemonSpecie) => {
+    const growthRate = pokemonSpecie.growth_rate.name.replaceAll("-", " ");
+
+    return growthRate;
+};
+
+const getGender = (pokemonSpecie) => {
+    if (pokemonSpecie.gender_rate !== -1) {
+        const genderPorcentage = (pokemonSpecie.gender_rate / 8) * 100;
+        const $genderContainer = returnElement({
+            type: "div",
+            class: "gender-container",
+        });
+
+        createGenderSymbol(
+            $genderContainer,
+            `♂ ${100 - genderPorcentage}% `,
+            "#3581B8"
+        );
+        createGenderSymbol(
+            $genderContainer,
+            `♀ ${genderPorcentage}%`,
+            "#FF338B"
+        );
+
+        return $genderContainer;
+    } else {
+        return "genderless";
+    }
+};
+
+const createGenderSymbol = ($element, innerText, color) => {
+    const $genderSymbol = returnElement({
+        type: "span",
+        class: "gender-container__gender-symbol",
+        innerText: innerText,
+        color: color,
+    });
+
+    appendElement($element, [$genderSymbol]);
+};
+
+const getEggGroups = (pokemonSpecie) => {
+    if (pokemonSpecie.egg_groups !== null) {
+        const egg_groups = [];
+
+        for (const slot of pokemonSpecie.egg_groups) {
+            if (slot.name == "no-eggs") return ["unknow"];
+
+            egg_groups.push(slot.name);
+        }
+
+        return egg_groups;
+    }
+};
+
+const getEggCycles = (pokemonSpecie) => {
+    const STEPS_PER_ROUND = 250;
+    const ROUNDS = pokemonSpecie.hatch_counter;
+    const TOTAL_STEPS = (ROUNDS * STEPS_PER_ROUND).toString();
+    const TOTAL_STEPS_WITH_POINT_PER_FIRST_THOUSAND = `${TOTAL_STEPS.slice(
+        0,
+        -3
+    )}.${TOTAL_STEPS.toString().slice(-3)}`;
+
+    return `∼${TOTAL_STEPS_WITH_POINT_PER_FIRST_THOUSAND} steps`;
+};
+
 const returnFightStats = (pokemon) => {
     const fightStats = {
-        Stats: {
-            hp: [
-                pokemon.stats[0].base_stat,
-                Math.floor(pokemon.stats[0].base_stat * 2 + 204),
-            ],
-            attack: [
-                pokemon.stats[1].base_stat,
-                Math.floor(pokemon.stats[1].base_stat * 2 + 99 * 1.1),
-            ],
-            defense: [
-                pokemon.stats[2].base_stat,
-                Math.floor(pokemon.stats[2].base_stat * 2 + 99 * 1.1),
-            ],
-            speed: [
-                pokemon.stats[3].base_stat,
-                Math.floor(pokemon.stats[3].base_stat * 2 + 99 * 1.1),
-            ],
-            "sp. atk": [
-                pokemon.stats[4].base_stat,
-                Math.floor(pokemon.stats[4].base_stat * 2 + 99 * 1.1),
-            ],
-            "sp. def": [
-                pokemon.stats[5].base_stat,
-                Math.floor(pokemon.stats[5].base_stat * 2 + 99 * 1.1),
-            ],
-            "": ["Min", "Max"],
-        },
-        Effectiveness: {
-            types: [],
-        },
-        Weaknesses: {
-            types: [],
+        stats: {
+            hp: returnStat(pokemon, "hp"),
+            attack: returnStat(pokemon, "attack"),
+            defense: returnStat(pokemon, "defense"),
+            speed: returnStat(pokemon, "speed"),
+            "sp. atk": returnStat(pokemon, "special-attack"),
+            "sp. def": returnStat(pokemon, "special-defense"),
+            total: returnTotal(pokemon),
         },
     };
 
     return fightStats;
 };
 
-const returnSpecieForms = (pokemonSpecies) => {
-    /* use evolution chain */
-    const specieForms = {
-        Evolution: {
-            first: "",
-            second: "",
-            third: "",
-            "mega evolution": "",
-            gigamax: "",
-        },
-        Shiny: {
-            first: "",
-            second: "",
-            third: "",
-            "mega evolution": "",
-            gigamax: "",
-        },
-    };
+/* Formula: https://pokemondb.net/pokebase/6506/there-formula-for-working-pokemons-highest-possible-stats*/
+const returnStat = (pokemon, type) => {
+    const BASE_STAT = getStat(pokemon, type);
+    const MAX_IV = 31;
+    const MAX_EV = 63;
+    const NATURE_ADDS = 1.1;
 
-    return specieForms;
+    if (type !== "hp") {
+        return {
+            base: BASE_STAT,
+            min: BASE_STAT * 2 + 110,
+            max: BASE_STAT * 2 + 110 + MAX_IV + MAX_EV,
+        };
+    } else {
+        return {
+            base: BASE_STAT,
+            min: BASE_STAT * 2 + 5,
+            max: Math.floor(
+                (BASE_STAT * 2 + 5 + MAX_IV + MAX_EV) * NATURE_ADDS
+            ),
+        };
+    }
+};
+
+const getStat = (pokemon, type) => {
+    for (const slot of pokemon.stats) {
+        if (slot.stat.name === type) return slot.base_stat;
+    }
+};
+
+const returnTotal = (pokemon) => {
+    let baseStatsTotal = 0;
+    const STATS_TYPES = [
+        "hp",
+        "attack",
+        "defense",
+        "speed",
+        "special-attack",
+        "special-defense",
+    ];
+
+    for (const type of STATS_TYPES) {
+        baseStatsTotal += getStat(pokemon, type);
+    }
+
+    return {
+        totalBase: baseStatsTotal,
+        min: "min",
+        max: "max",
+    };
 };
 
 export const hideElement = ($element) => {

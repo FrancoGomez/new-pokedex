@@ -192,7 +192,7 @@ button {
 }
 
 .pokemon__modal__pokemon-container__japanese-name {
-    font-size: clamp(3.5rem, 12vw + 1rem, 7rem);
+    font-size: clamp(3.5rem, 11vw + 1rem, 7rem);
     text-align: center;
     font-weight: 600;
     margin-bottom: max(-15%, -100px);
@@ -222,6 +222,16 @@ button {
     left: 0;
     height: 100%;
     width: 100%;
+}
+
+.pokemon__modal__pokemon-container__name {
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.pokemon__modal__pokemon-container__id {
+    text-align: center;
+    margin: 0.3rem 0 2rem;
 }
 
 .pokemon__modal__data-container {
@@ -266,6 +276,13 @@ button {
 
 .pokemon__modal__data-container__biography-container__list {
     list-style: none;
+    margin-bottom: 1.5rem;
+}
+
+.pokemon__modal__data-container__biography-container__list-title {
+    font-size: 1.1rem;
+    text-transform: capitalize;
+    margin-top: 1rem;
 }
 
 .pokemon__modal__data-container__biography-container__list__item {
@@ -277,17 +294,23 @@ button {
 .pokemon__modal__data-container__biography-container__list__item__title {
     width: 50%;
     text-transform: capitalize;
+    font-size: 1rem;
 }
 
 .pokemon__modal__data-container__biography-container__list__item__entrie {
     width: 50%;
-    text-align: end;
+    text-align: start;
     text-transform: capitalize;
+    font-size: 1rem;
 }
 
-.pokemon__modal__data-container__biography-container__list__item__description {
-    margin-top: 0.3rem;
+.pokemon__modal__data-container__biography-container__about-description {
+    margin: 0.5rem 0 1.5rem;
     text-align: justify;
+}
+
+.gender-container {
+    font-weight: 600;
 }
 
 /* 2.3.2 MODAL STATS */
@@ -304,23 +327,87 @@ button {
 .pokemon__modal__data-container__stats-container__list__item__title {
     width: 24%;
     text-transform: capitalize;
+    font-size: 1rem;
 }
 
 .pokemon__modal__data-container__stats-container__list__item__entrie {
-    width: 38%;
-    padding-right: 1.5%;
+    width: 25%;
     text-align: end;
     text-transform: capitalize;
-}
-
-.pokemon__modal__data-container__stats-container__list__item__min-max {
-    width: 38%;
-    font-weight: 600;
-    text-align: end;
+    font-size: 1rem;
 }
 
 .pokemon__modal__data-container__biography-container__description {
-    font-weight: 600;
+    font-weight: 500;
+    font-size: 0.9rem;
     margin: 2rem 0;
     text-align: justify;
+}
+
+/* 2.3.3 MODAL EVOLUTIONS */
+.pokemon__modal__data-container__forms-container {
+    padding: 1rem 0;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-height: max-content;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container {
+    text-align: center;
+    max-width: 150px;
+    max-height: max-content;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__image-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    min-height: 150px;
+    min-width: 150px;
+    margin-top: 1rem;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__image-container__background-circle {
+    width: 90%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__image-container__image-form {
+    position: absolute;
+    height: auto;
+    width: 100%;
+    top: 0;
+    left: 0;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__image-container__image-form:hover {
+    cursor: pointer;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__name-form {
+    font-size: 1.1rem;
+    text-transform: capitalize;
+    margin: 0.5rem 0 0.3rem;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__id-form {
+    font-weight: 600;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__types-form {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__types-form__type {
+    text-transform: uppercase;
+    margin-top: 0.6rem;
+    font-weight: 700;
 }
