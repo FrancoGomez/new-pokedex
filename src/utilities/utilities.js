@@ -1,74 +1,74 @@
 export const typePokemonColors = {
     bug: {
-        backgroundColor: "rgb(114, 159, 63)",
+        backgroundColor: "#9bbb31",
         color: "white",
     },
     dragon: {
-        backgroundColor: "rgb(241, 110, 87)",
+        backgroundColor: "#006cc7",
         color: "white",
     },
     fairy: {
-        backgroundColor: "rgb(253, 185, 233)",
-        color: "black",
+        backgroundColor: "#FF70F5",
+        color: "white",
     },
     fire: {
-        backgroundColor: "rgb(253, 125, 36)",
+        backgroundColor: "#FF850A",
         color: "white",
     },
     ghost: {
-        backgroundColor: "rgb(123, 98, 163)",
+        backgroundColor: "#9E2CB5",
         color: "white",
     },
     ground: {
-        backgroundColor: "rgb(171, 152, 66)",
-        color: "black",
+        backgroundColor: "#de7c4d",
+        color: "white",
     },
     normal: {
-        backgroundColor: "rgb(164, 172, 175)",
-        color: "black",
+        backgroundColor: "#a0a29f",
+        color: "white",
     },
     psychic: {
-        backgroundColor: "rgb(243, 102, 185)",
+        backgroundColor: "#fe8581",
         color: "white",
     },
     steel: {
-        backgroundColor: "rgb(158, 183, 184)",
-        color: "black",
+        backgroundColor: "#4f95a3",
+        color: "white",
     },
     dark: {
-        backgroundColor: "rgb(72, 87, 91)",
+        backgroundColor: "#585761",
         color: "white",
     },
     electric: {
-        backgroundColor: "rgb(248, 208, 48)",
-        color: "black",
+        backgroundColor: "#FCD022",
+        color: "white",
     },
     fighting: {
-        backgroundColor: "rgb(213, 103, 35)",
+        backgroundColor: "#d6435f",
         color: "white",
     },
     flying: {
-        backgroundColor: "rgb(61, 199, 239)",
-        color: "black",
+        backgroundColor: "#75A6E6",
+        color: "white",
     },
     grass: {
-        backgroundColor: "rgb(155, 204, 80)",
-        color: "black",
+        backgroundColor: "#6abd5a",
+        color: "white",
     },
     ice: {
-        backgroundColor: "rgb(81, 196, 231)",
-        color: "black",
+        backgroundColor: "#47C2AF",
+        color: "white",
     },
     poison: {
-        backgroundColor: "rgb(185, 127, 201)",
+        backgroundColor: "#b066cf",
         color: "white",
     },
     rock: {
-        backgroundColor: "rgb(163, 140, 33)",
+        backgroundColor: "#AD9048",
         color: "white",
     },
     water: {
-        backgroundColor: "rgb(69, 146, 196)",
+        backgroundColor: "#349edf",
         color: "white",
     },
 };
@@ -321,7 +321,7 @@ const returnPokemonInfo = (pokemon, pokemonSpecie) => {
             name: getName(pokemon),
             japaneseName: getJapaneseName(pokemonSpecie),
             types: getTypes(pokemon),
-            description: getDescription(pokemonSpecie),
+            description: getDescription(pokemon, pokemonSpecie),
         },
         pokedex: {
             specie: getSpecie(pokemonSpecie),
@@ -374,16 +374,53 @@ const getTypes = (pokemon) => {
     return types;
 };
 
-const getDescription = (pokemonSpecie) => {
+const getDescription = (pokemon, pokemonSpecie) => {
     const descriptions = pokemonSpecie.flavor_text_entries;
+    let description;
 
     for (const slot of descriptions) {
         const english = "en";
-        const description = slot.flavor_text.replaceAll("\n", " ");
 
         if (slot.language.name === english) {
-            return description;
+            if (description === undefined) {
+                description = slot.flavor_text.replaceAll("\n", " ");
+            }
+
+            if (
+                /alola/.test(pokemon.name) &&
+                /alola/.test(slot.flavor_text.toLowerCase())
+            ) {
+                description = slot.flavor_text.replaceAll("\n", " ");
+                return description;
+            } else if (
+                /galar/.test(pokemon.name) &&
+                /galar/.test(slot.flavor_text.toLowerCase())
+            ) {
+                description = slot.flavor_text.replaceAll("\n", " ");
+                return description;
+            } else if (
+                /mega/.test(pokemon.name) &&
+                !/mega-x/.test(pokemon.name) &&
+                /lets-go-/.test(slot.version.name.toLowerCase())
+            ) {
+                description = slot.flavor_text.replaceAll("\n", " ");
+                return description;
+            } else if (
+                /gmax/.test(pokemon.name) &&
+                /gigantamax/.test(slot.flavor_text.toLowerCase())
+            ) {
+                description = slot.flavor_text.replaceAll("\n", " ");
+                return description;
+            }
         }
+    }
+
+    if (pokemon.name === "charizard-mega-x") {
+        return descriptions[76].flavor_text.replaceAll("\n", " ");
+    } else if (pokemon.name === "mewtwo-mega-x") {
+        return descriptions[77].flavor_text.replaceAll("\n", " ");
+    } else {
+        return description;
     }
 };
 

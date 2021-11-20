@@ -257,6 +257,47 @@ const createEntrieTitle = ($element, key, section) => {
 };
 
 const createEntrieData = ($element, key, entrie, section) => {
+    if (key === "types") {
+        const $typesList = returnElement({
+            type: "ul",
+            class: "pokemon__modal__data-container__stats-container__type-effectiveness__list",
+        });
+
+        for (const type of entrie) {
+            const $typesListItem = returnElement({
+                type: "li",
+                class: "pokemon__modal__data-container__stats-container__type-effectiveness__list__item",
+            });
+
+            const $typeContainer = returnElement({
+                type: "div",
+                class: "pokemon__modal__data-container__stats-container__type-effectiveness__list__item__type-container",
+                backgroundColor: typePokemonColors[type].backgroundColor,
+            });
+
+            const $typeIcon = returnElement({
+                type: "img",
+                class: "pokemon__modal__data-container__biography-container__type-effectiveness__list__item__type-container__type-icon",
+                src: `https://raw.githubusercontent.com/FrancoGomez/new-pokedex/master/assets/types-icons/${type}.svg`,
+            });
+
+            const $typeName = returnElement({
+                type: "p",
+                class: "pokemon__modal__data-container__stats-container__type-effectiveness__list__item__type-container__type-name",
+                innerText: type,
+                color: typePokemonColors[type].color,
+            });
+
+            appendElement($typeContainer, [$typeIcon, $typeName]);
+            appendElement($typesListItem, [$typeContainer]);
+            appendElement($typesList, [$typesListItem]);
+        }
+
+        appendElement($element, [$typesList]);
+
+        return;
+    }
+
     if (section !== "stats") {
         if (key !== "gender" || entrie === "genderless") {
             const $entrieData = returnElement({
@@ -336,6 +377,95 @@ const createStats = ($element, modalInfo, pokemonTypeColor) => {
     createTitle($element, "Base stats", pokemonTypeColor);
     createStatsList($element, modalInfo);
     createStatsDescription($element);
+    returnPokemonWeaknesess($element, modalInfo, pokemonTypeColor);
+};
+
+const returnPokemonWeaknesess = async (
+    $element,
+    modalInfo,
+    pokemonTypeColor
+) => {
+    const types = modalInfo.about.pokedex.types;
+    const damageRelations = {};
+
+    for (const type of types) {
+        const TYPE_URL = `https://pokeapi.co/api/v2/type/${type}`;
+
+        const typeInfo = await (await fetch(TYPE_URL)).json();
+
+        for (const [key, entrie] of Object.entries(typeInfo.damage_relations)) {
+            if (/_to/.test(key) || entrie.length === 0) continue;
+
+            for (const slot of entrie) {
+                if (/double_damage/.test(key)) {
+                    if (!damageRelations[slot.name]) {
+                        damageRelations[slot.name] = 2;
+                    } else {
+                        damageRelations[slot.name] =
+                            damageRelations[slot.name] * 2;
+                    }
+                } else if (/half_damage/.test(key)) {
+                    if (!damageRelations[slot.name]) {
+                        damageRelations[slot.name] = 0.5;
+                    } else {
+                        damageRelations[slot.name] =
+                            damageRelations[slot.name] * 0.5;
+                    }
+                } else if (/no_damage/.test(key)) {
+                    if (!damageRelations[slot.name]) {
+                        damageRelations[slot.name] = 0;
+                    } else {
+                        damageRelations[slot.name] =
+                            damageRelations[slot.name] * 0;
+                    }
+                }
+            }
+        }
+    }
+
+    createTitle($element, "Weaknesess", pokemonTypeColor);
+    const $typesList = returnElement({
+        type: "ul",
+        class: "pokemon__modal__data-container__biography-container__type-effectiveness__list",
+    });
+
+    for (const [key, entrie] of Object.entries(damageRelations)) {
+        if (entrie <= 1) continue;
+
+        createType($typesList, key);
+    }
+
+    appendElement($element, [$typesList]);
+};
+
+const createType = ($element, type) => {
+    const $typesListItem = returnElement({
+        type: "li",
+        class: "pokemon__modal__data-container__biography-container__type-effectiveness__list__item",
+    });
+
+    const $typeContainer = returnElement({
+        type: "div",
+        class: "pokemon__modal__data-container__biography-container__type-effectiveness__list__item__type-container",
+        backgroundColor: typePokemonColors[type].backgroundColor,
+    });
+
+    const $typeIcon = returnElement({
+        type: "img",
+        class: "pokemon__modal__data-container__biography-container__type-effectiveness__list__item__type-container__type-icon",
+        src: `https://raw.githubusercontent.com/FrancoGomez/new-pokedex/master/assets/types-icons/${type}.svg`,
+    });
+
+    const $typeName = returnElement({
+        type: "p",
+        class: "pokemon__modal__data-container__biography-container__type-effectiveness__list__item__type-container__type-name",
+        innerText: type,
+        color: typePokemonColors[type].color,
+    });
+
+    appendElement($typeContainer, [$typeIcon, $typeName]);
+    appendElement($typesListItem, [$typeContainer]);
+    appendElement($element, [$typesListItem]);
 };
 
 const createStatsList = ($element, modalInfo) => {

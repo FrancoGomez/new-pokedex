@@ -213,6 +213,6 @@ const handleCardClick = (e) => {
     }
 };
 
-/* displayElement($modalPokemon);
+displayElement($modalPokemon);
 displayPokemonData();
-hideElement($sectionPokemon); */
+hideElement($sectionPokemon);
