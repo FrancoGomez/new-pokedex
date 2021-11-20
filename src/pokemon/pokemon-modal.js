@@ -208,10 +208,10 @@ const createDescription = ($element, modalInfo) => {
     appendElement($element, [$description]);
 };
 
-const createTitle = ($element, titleInnerText, color) => {
+const createTitle = ($element, titleInnerText, color, extraClass = "") => {
     const $pokedexTitle = returnElement({
         type: "h3",
-        class: "pokemon__modal__data-container__biography-container__list-title",
+        class: `pokemon__modal__data-container__biography-container__list-title ${extraClass}`,
         innerText: titleInnerText,
         color: color,
     });
@@ -362,23 +362,41 @@ const createStatsDescription = ($element) => {
     appendElement($element, [$statsDescription]);
 };
 
-const createFormsContainer = ($element, modalInfo) => {
+const createFormsContainer = ($element, modalInfo, pokemonTypeColor) => {
     const $formsContainer = returnElement({
         type: "section",
         class: "pokemon__modal__data-container__forms-container hidden",
         id: "evolutions",
     });
 
-    createEvolutionsContainer($formsContainer, modalInfo);
-    createEvolutionsFormsContainer($formsContainer, modalInfo);
+    createEvolutionsContainer($formsContainer, modalInfo, pokemonTypeColor);
 
     appendElement($element, [$formsContainer]);
 };
 
-const createEvolutionsContainer = ($element, modalInfo) => {
+const createEvolutionsContainer = ($element, modalInfo, pokemonTypeColor) => {
+    let evolutionWithVarieties = [];
+
+    createTitle(
+        $element,
+        "evolution chain",
+        pokemonTypeColor,
+        "evolution-title"
+    );
+
     for (const [evolution, evolutionData] of Object.entries(
         modalInfo.evolutions
     )) {
+        if (evolution !== "first" && evolutionData !== undefined) {
+            const $evolutionsArrow = returnElement({
+                type: "div",
+                class: "pokemon__modal__data-container__forms-container__evolutions-container__arrow",
+                innerText: "➤",
+            });
+
+            appendElement($element, [$evolutionsArrow]);
+        }
+
         const $evolutionsContainer = returnElement({
             type: "div",
             class: "pokemon__modal__data-container__forms-container__evolutions-container",
@@ -386,22 +404,32 @@ const createEvolutionsContainer = ($element, modalInfo) => {
 
         if (evolutionData !== undefined) {
             for (const slot of evolutionData) {
-                const $evolutionContainer = returnElement({
-                    type: "div",
-                    class: "pokemon__modal__data-container__forms-container__evolutions-container__evolution-container",
-                });
-
-                createContainerImageForm($evolutionContainer, slot);
-                createNameForm($evolutionContainer, slot);
-                createIdForm($evolutionContainer, slot);
-                createTypesForm($evolutionContainer, slot);
-
-                appendElement($evolutionsContainer, [$evolutionContainer]);
+                if (slot.varieties) evolutionWithVarieties.push(slot);
+                createPokemonEvolutions($evolutionsContainer, slot);
             }
         }
 
         appendElement($element, [$evolutionsContainer]);
     }
+    createEvolutionsFormsContainer(
+        $element,
+        evolutionWithVarieties,
+        pokemonTypeColor
+    );
+};
+
+const createPokemonEvolutions = ($element, pokemon) => {
+    const $evolutionContainer = returnElement({
+        type: "div",
+        class: "pokemon__modal__data-container__forms-container__evolutions-container__evolution-container",
+    });
+
+    createContainerImageForm($evolutionContainer, pokemon);
+    createNameForm($evolutionContainer, pokemon);
+    createIdForm($evolutionContainer, pokemon);
+    createTypesForm($evolutionContainer, pokemon);
+
+    appendElement($element, [$evolutionContainer]);
 };
 
 const createContainerImageForm = ($element, slot) => {
@@ -455,7 +483,7 @@ const createNameForm = ($element, slot) => {
     const $nameForm = returnElement({
         type: "h4",
         class: "pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__name-form",
-        innerText: slot.name,
+        innerText: slot.name.replaceAll("-", " ").replace("gmax", "gigantamax"),
     });
 
     appendElement($element, [$nameForm]);
@@ -493,7 +521,52 @@ const createTypesForm = ($element, slot) => {
     appendElement($element, [$typesForm]);
 };
 
-const createEvolutionsFormsContainer = ($element, modalInfo) => {};
+const createEvolutionsFormsContainer = (
+    $element,
+    evolutionWithVarieties,
+    pokemonTypeColor
+) => {
+    if (evolutionWithVarieties.length === 0) return;
+
+    createTitle(
+        $element,
+        "pokemon variations",
+        pokemonTypeColor,
+        "variations-title"
+    );
+
+    for (const evolutionVariety of evolutionWithVarieties) {
+        const origialFormId = evolutionVariety.id;
+
+        const $evolutionsContainerOriginal = returnElement({
+            type: "div",
+            class: "pokemon__modal__data-container__forms-container__evolutions-container",
+        });
+
+        const $evolutionsArrow = returnElement({
+            type: "div",
+            class: "pokemon__modal__data-container__forms-container__evolutions-container__arrow",
+            innerText: "➤",
+        });
+
+        createPokemonEvolutions($evolutionsContainerOriginal, evolutionVariety);
+
+        appendElement($element, [$evolutionsContainerOriginal]);
+        appendElement($element, [$evolutionsArrow]);
+
+        const $evolutionsContainerVariety = returnElement({
+            type: "div",
+            class: "pokemon__modal__data-container__forms-container__evolutions-container",
+        });
+
+        for (const variety of evolutionVariety.varieties) {
+            variety.id += `/${origialFormId}`;
+            createPokemonEvolutions($evolutionsContainerVariety, variety);
+        }
+
+        appendElement($element, [$evolutionsContainerVariety]);
+    }
+};
 
 const handleSectionClick = ($clickedButton) => {
     const selectedText = new RegExp("--selected");

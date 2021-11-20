@@ -1,0 +1,22 @@
+{
+  "name": "pokedex",
+  "version": "1.0.0",
+  "description": "Page that display a group of pokemon",
+  "main": "index.html",
+  "scripts": {
+    "test": "npm test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/FrancoGomez/new-pokedex.git"
+  },
+  "author": "Franco Gomez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/FrancoGomez/new-pokedex/issues"
+  },
+  "homepage": "https://github.com/FrancoGomez/new-pokedex#readme",
+  "dependencies": {
+    "http-server": "^14.0.0"
+  }
+}

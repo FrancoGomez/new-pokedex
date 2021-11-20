@@ -6,6 +6,7 @@
 /* 2.3 POKEMON MODAL
 /* 2.3.1 MODAL BIOGRAPHY
 /* 2.3.2 MODAL STATS
+/* 2.3.3 MODAL EVOLUTIONS
 
 /* 0.UTILITIES */
 
@@ -101,7 +102,7 @@ button {
 
 .pokemon-card__graphic-container__displayed-id {
     font-size: 3rem;
-    font-weight: 600;
+    font-weight: 700;
     text-align: center;
     margin: 0 auto;
     margin-bottom: -70px;
@@ -294,7 +295,7 @@ button {
 .pokemon__modal__data-container__biography-container__list__item__title {
     width: 50%;
     text-transform: capitalize;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .pokemon__modal__data-container__biography-container__list__item__entrie {
@@ -327,7 +328,7 @@ button {
 .pokemon__modal__data-container__stats-container__list__item__title {
     width: 24%;
     text-transform: capitalize;
-    font-size: 1rem;
+    font-size: 0.9rem;
 }
 
 .pokemon__modal__data-container__stats-container__list__item__entrie {
@@ -345,6 +346,7 @@ button {
 }
 
 /* 2.3.3 MODAL EVOLUTIONS */
+
 .pokemon__modal__data-container__forms-container {
     padding: 1rem 0;
 }
@@ -354,6 +356,21 @@ button {
     flex-wrap: wrap;
     justify-content: center;
     min-height: max-content;
+}
+
+.evolution-title {
+    margin-left: 1rem;
+}
+
+.variations-title {
+    margin: 3rem 0 0.2rem 1rem;
+}
+
+.pokemon__modal__data-container__forms-container__evolutions-container__arrow {
+    transform: rotate(90deg);
+    text-align: center;
+    font-size: 1.5rem;
+    padding-left: 2rem;
 }
 
 .pokemon__modal__data-container__forms-container__evolutions-container__evolution-container {
@@ -376,6 +393,7 @@ button {
     width: 90%;
     aspect-ratio: 1;
     border-radius: 50%;
+    opacity: 0.7;
 }
 
 .pokemon__modal__data-container__forms-container__evolutions-container__evolution-container__image-container__image-form {
